@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { View, Image, TouchableOpacity, Text } from 'react-native';
-import styles, { colors } from '../Styles.js';
+import styles, { colors } from '../components/Styles.js';
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,10 +9,10 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
-const LogInButtons = ({ text, button_color, text_color, style }) => {
+const LogInButtons = ({ text, button_color, text_color, style, navigation }) => {
   return (
     <TouchableOpacity
-      onPress={() => console.log('pressed')}
+      onPress={() => text === "Log In" ? navigation.navigate('log in') : navigation.navigate('sign up')}
       style={{
         width: '100%',
         height: 54,
@@ -29,7 +29,7 @@ const LogInButtons = ({ text, button_color, text_color, style }) => {
   );
 };
 
-export default function HomePage() {
+export default function HomePage({navigation}) {
   const glowScale = useSharedValue(1);
   const glowOpacity = useSharedValue(0.25);
 
@@ -60,7 +60,7 @@ export default function HomePage() {
   return (
     <View style={{ flex: 1 }}>
       <Image
-        source={require('../../assets/Home.png')}
+        source={require('../assets/Home.png')}
         style={{ flex: 1, width: '100%' }}
         resizeMode="cover"
       />
@@ -103,15 +103,15 @@ export default function HomePage() {
             ]}
           />
           <Image
-            source={require('../../assets/SOLARIS.png')}
+            source={require('../assets/SOLARIS.png')}
             style={{ width: '100%', height: '100%' }}
             resizeMode="contain"
           />
         </View>
       </View>
       <View style={{ width: '80%', position: 'absolute', flexDirection: 'column', top: '80%', alignSelf: 'center', alignItems: 'center', justifyContent: 'center', opacity: 0.85 }}>
-        <LogInButtons text="Log In" button_color={colors.accent} text_color={colors.bg} />
-        <LogInButtons text="Sign Up" button_color={colors.blue} text_color="#fff" style={{ marginTop: 12 }} />
+        <LogInButtons text="Log In" button_color={colors.accent} text_color={colors.bg} navigation={navigation} />
+        <LogInButtons text="Sign Up" button_color={colors.blue} text_color="#fff" style={{ marginTop: 12 }} navigation={navigation} />
       </View>
     </View>
   );
