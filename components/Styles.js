@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: "700",
+    fontFamily: 'Geist'
   },
   text: {
     color: colors.text,

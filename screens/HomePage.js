@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { View, Image, TouchableOpacity, Text } from 'react-native';
 import styles, { colors } from '../components/Styles.js';
+
 import Animated, {
   Easing,
   useAnimatedStyle,
@@ -9,7 +10,21 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 
+import { useAuth } from '@clerk/clerk-expo'
+
 const LogInButtons = ({ text, button_color, text_color, style, navigation }) => {
+  const {isSignedIn} = useAuth()
+
+  // Detects if user is already signed in. If they are send them to signed in page
+    useEffect(() => {
+      if(isSignedIn){
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'signed in' }],
+        })
+      }
+    },[isSignedIn])
+
   return (
     <TouchableOpacity
       onPress={() => text === "Log In" ? navigation.navigate('log in') : navigation.navigate('sign up')}
