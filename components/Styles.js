@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 20,
     fontWeight: "700",
-    fontFamily: 'Geist'
+    fontFamily: "Geist",
   },
   text: {
     color: colors.text,
@@ -83,9 +83,9 @@ const styles = StyleSheet.create({
     alignSelf: "center",
 
     // ios
-    shadowColor: '#fcd34d',
+    shadowColor: "#fcd34d",
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: .75,
+    shadowOpacity: 0.75,
     shadowRadius: 45,
 
     // Android Shadow

@@ -1,17 +1,17 @@
-import React from 'react'
-import { View, Text, Pressable } from 'react-native'
-import { useAuth } from '@clerk/clerk-expo'
+import React from "react";
+import { View, Text, Pressable } from "react-native";
+import { useAuth } from "@clerk/clerk-expo";
 
 export default function SignedIn({ navigation }) {
-  const { signOut } = useAuth()
+  const { signOut } = useAuth();
 
   const handleLogout = async () => {
-    await signOut()
-    navigation.replace('home')
-  }
+    await signOut();
+    navigation.replace("home");
+  };
 
   return (
-    <View style={{ flex: 1, justifyContent: 'center', padding: 24 }}>
+    <View style={{ flex: 1, justifyContent: "center", padding: 24 }}>
       <Text style={{ fontSize: 24 }}>You are signed in</Text>
 
       <Pressable
@@ -21,5 +21,5 @@ export default function SignedIn({ navigation }) {
         <Text>Sign Out</Text>
       </Pressable>
     </View>
-  )
+  );
 }
