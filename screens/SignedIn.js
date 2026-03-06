@@ -1,41 +1,25 @@
-import React from "react";
+import React, { use } from "react";
 import { View, Text, Pressable } from "react-native";
-import { useAuth } from "@clerk/clerk-expo";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@clerk/clerk-expo";
+
+import config from "../../config"
 
 import Footer from "../components/footer/Footer";
-
+// sign out modal I may implement later so leaving logic in here for now
 export default function SignedIn({navigation, screenSelection, setScreenSelection, signOutModalVisibility, setSignOutModalVisibility}) {
-  React.useEffect(()=>{
-    console.log(signOutModalVisibility)
-  }, [signOutModalVisibility])
+  const [data, setData] = useState(undefined)
+  const {getToken} = useAuth() 
 
-  const { signOut } = useAuth();
-
-  const handleLogout = async () => {
-    try{
-      await signOut();
-    }
-    catch(err){
-      const message =
-      err?.errors?.[0]?.message || "Sign-up failed. Please try again.";
-      Alert.alert("Sign-up failed", message);
-      return;
-    }
-    navigation.replace("home");
-  };
+  const getAPIData = () => {
+    const url = `${config.apiUrl}/telemetry`
+    const token = getToken()
+  }
 
   return (
     <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>  
         <Text style={{ fontSize: 24, }}>You are signed in</Text>
-
-        <Pressable
-          onPress={handleLogout}
-          style={{ margin: 20, padding: 12, borderWidth: 1 }}
-        >
-          <Text>Sign Out</Text>
-        </Pressable>
       </View>
       <Footer 
         navigation = {navigation}

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 
 import { FontAwesome } from "@expo/vector-icons";
@@ -47,7 +47,6 @@ export default function Footer({ navigation, screenSelection, setScreenSelection
               <FontAwesome name="sign-out" size={25} color={screenSelection === 3 ? colors.accent : colors.text} style={{ marginBottom: 5 }}/>
               <Text style={[FooterStyles.text, (screenSelection === 3) && FooterStyles.accentText]}>Sign out</Text>
           </Pressable>
-          
         </View>
     </View>
   );
