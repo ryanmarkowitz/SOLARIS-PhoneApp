@@ -1,9 +1,8 @@
 import { StatusBar } from "expo-status-bar";
-import styles from "./components/Styles.js";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useState } from "react"
 
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
@@ -18,6 +17,9 @@ import SignedIn from "./screens/SignedIn.js";
 const Stack = createNativeStackNavigator();
 
 export default function App() {
+  const [screenSelection, setScreenSelection] = useState(1)
+  const [signOutModalVisibility, setSignOutModalVisibility] = useState(false)
+
   const [fontsLoaded] = useFonts({
     Geist: require("./assets/fonts/Geist.ttf"),
   });
@@ -31,7 +33,17 @@ export default function App() {
           <Stack.Screen name="home" component={HomePage} />
           <Stack.Screen name="log in" component={LogIn} />
           <Stack.Screen name="sign up" component={SignUp} />
-          <Stack.Screen name="signed in" component={SignedIn} />
+          <Stack.Screen name="signed in">
+            {({ navigation }) => (
+              <SignedIn 
+                navigation={navigation}
+                screenSelection={screenSelection}
+                setScreenSelection={setScreenSelection} 
+                setSignOutModalVisibility={setSignOutModalVisibility}
+                signOutModalVisibility={signOutModalVisibility}
+              />
+            )}
+          </Stack.Screen>
         </Stack.Navigator>
         <StatusBar style="auto" />
       </NavigationContainer>
