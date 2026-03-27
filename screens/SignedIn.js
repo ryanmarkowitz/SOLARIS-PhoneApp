@@ -1,9 +1,9 @@
-import React, { use } from "react";
+import React, { useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@clerk/clerk-expo";
 
-import config from "../../config"
+import config from "../config"
 
 import Footer from "../components/footer/Footer";
 // sign out modal I may implement later so leaving logic in here for now
@@ -11,9 +11,17 @@ export default function SignedIn({navigation, screenSelection, setScreenSelectio
   const [data, setData] = useState(undefined)
   const {getToken} = useAuth() 
 
-  const getAPIData = () => {
+  // Get data from Backend sqla
+  const getAPIData = async () => {
     const url = `${config.apiUrl}/telemetry`
     const token = getToken()
+    let result = await fetch(url, {
+      headers : {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    result = await result.json()
+    setData(result)
   }
 
   return (
