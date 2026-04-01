@@ -19,6 +19,7 @@ import DistanceTraveledPage5 from "../components/distanceTraveled/DistanceTravel
 import NetPowerPage1 from "../components/netPower/NetPowerPage1";
 import NetPowerPage2 from "../components/netPower/NetPowerPage2";
 import NetPowerPage3 from "../components/netPower/NetPowerPage3";
+import NetPowerPage4 from "../components/netPower/NetPowerPage4";
 
 export default function Telemetry() {
   const [data, setData] = useState(undefined);
@@ -123,6 +124,7 @@ export default function Telemetry() {
             <NetPowerPage1 currentPower={data?.netPower?.current} />
             <NetPowerPage2 pastHourPower={data?.netPower?.pastHour} />
             <NetPowerPage3 pastDayPower={data?.netPower?.pastDay} />
+            <NetPowerPage4 pastWeekPower={data?.netPower?.pastWeek} />
           </TelemetryCards>
           <TelemetryCards>
             <View>

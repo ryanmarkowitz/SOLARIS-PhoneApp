@@ -4,21 +4,19 @@ import styles, { colors } from "../Styles";
 import NetPowerStyles from "./NetPowerStyles";
 import { BarChart } from "react-native-gifted-charts";
 
-export default function NetPowerPage2({
-  pastHourPower,
+export default function NetPowerPage4({
+  pastWeekPower,
   cardWidth,
   activeIndex,
 }) {
-  const barData = (pastHourPower ?? []).map((item, i) => {
+  const barData = (pastWeekPower ?? []).map((item, i) => {
     const date = new Date(item.dateTime); // JS parses ISO 8601 UTC automatically
 
-    const hours = date.getHours(); // already local time after parsing
-    const minutes = date.getMinutes();
-    const minutesToString = minutes < 10 ? "0" + minutes : minutes;
+    const day = date.toLocaleDateString("en-US", { weekday: "short" }); // already local time after parsing
 
     return {
       value: item.value,
-      label: i % 1 == 0 ? (hours % 12 || 12) + ":" + minutesToString : "",
+      label: i % 1 == 0 ? day : "",
     };
   });
 
@@ -49,9 +47,9 @@ export default function NetPowerPage2({
     };
   };
 
-  const chartWidth = cardWidth * 0.75;
+  const chartWidth = cardWidth * 0.76;
 
-  const isActive = activeIndex === 1;
+  const isActive = activeIndex === 3;
 
   const getBarWidth = (length) => Math.floor((chartWidth / length) * 0.8);
   const getSpacing = (length) => Math.floor((chartWidth / length) * 0.2);
@@ -59,7 +57,7 @@ export default function NetPowerPage2({
   // dynamically find best xAxis label font size depending on how many records we got
   const getXAxisFontSize = (length) => {
     if (length >= 23) return 1;
-    if (length >= 19) return 2;
+    if (length >= 14) return 2;
     if (length >= 11) return 3;
     if (length >= 10) return 4;
     if (length >= 8) return 5;
@@ -75,7 +73,7 @@ export default function NetPowerPage2({
           <Text style={NetPowerStyles.title}>Net Power</Text>
         </View>
         <View style={NetPowerStyles.center_container}>
-          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+          <Text style={NetPowerStyles.muted}>PAST WEEK</Text>
         </View>
       </View>
     );
@@ -88,9 +86,9 @@ export default function NetPowerPage2({
       </View>
       {isActive && (
         <View style={NetPowerStyles.center_container}>
-          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+          <Text style={NetPowerStyles.muted}>PAST WEEK</Text>
           <BarChart
-            key={activeIndex === 1 ? `visible-${activeIndex}` : "hidden"}
+            key={activeIndex === 3 ? `visible-${activeIndex}` : "hidden"}
             data={barData}
             barWidth={getBarWidth(barData.length)}
             spacing={getSpacing(barData.length)}

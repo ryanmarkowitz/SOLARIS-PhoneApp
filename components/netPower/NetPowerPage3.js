@@ -74,7 +74,7 @@ export default function NetPowerPage3({
           <Text style={NetPowerStyles.title}>Net Power</Text>
         </View>
         <View style={NetPowerStyles.center_container}>
-          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+          <Text style={NetPowerStyles.muted}>PAST DAY</Text>
         </View>
       </View>
     );
@@ -87,7 +87,7 @@ export default function NetPowerPage3({
       </View>
       {isActive && (
         <View style={NetPowerStyles.center_container}>
-          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+          <Text style={NetPowerStyles.muted}>PAST DAY</Text>
           <BarChart
             key={activeIndex === 2 ? `visible-${activeIndex}` : "hidden"}
             data={barData}

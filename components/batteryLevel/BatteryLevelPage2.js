@@ -47,7 +47,7 @@ export default function BatteryLevelPage2({
           <Text style={BatteryLevelStyles.title}>Battery Level</Text>
         </View>
         <View style={BatteryLevelStyles.center_container}>
-          <Text style={BatteryLevelStyles.muted}>PAST 24 HOURS</Text>
+          <Text style={BatteryLevelStyles.muted}>PAST DAY</Text>
         </View>
       </View>
     );
@@ -60,7 +60,7 @@ export default function BatteryLevelPage2({
       </View>
       {isActive && (
         <View style={BatteryLevelStyles.center_container}>
-          <Text style={BatteryLevelStyles.muted}>PAST 24 HOURS</Text>
+          <Text style={BatteryLevelStyles.muted}>PAST DAY</Text>
           <BarChart
             key={activeIndex === 1 ? `visible-${activeIndex}` : "hidden"}
             data={barData}
