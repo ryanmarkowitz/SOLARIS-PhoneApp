@@ -1,0 +1,123 @@
+import React from "react";
+import { View, Text } from "react-native";
+import styles, { colors } from "../Styles";
+import NetPowerStyles from "./NetPowerStyles";
+import { BarChart } from "react-native-gifted-charts";
+
+export default function NetPowerPage3({
+  pastDayPower,
+  cardWidth,
+  activeIndex,
+}) {
+  const barData = (pastDayPower ?? []).map((item, i) => {
+    const date = new Date(item.dateTime); // JS parses ISO 8601 UTC automatically
+
+    const hours = date.getHours(); // already local time after parsing
+    const suffix = hours >= 12 ? "PM" : "AM";
+
+    return {
+      value: item.value,
+      label: i % 1 == 0 ? (hours % 12 || 12) + suffix : "",
+    };
+  });
+
+  const getChartParams = () => {
+    const TOTAL_HEIGHT = 120;
+    const absMax = Math.max(
+      0,
+      Math.ceil(Math.max(...barData.map((i) => i.value))),
+    );
+    const absMin = Math.abs(
+      Math.min(0, Math.floor(Math.min(...barData.map((i) => i.value)))),
+    );
+    const range = Math.max(absMax, absMin);
+    const stepVal = Math.ceil(range / 5);
+    const sectionsAbove = Math.max(1, Math.ceil(absMax / stepVal));
+    const sectionsBelow = absMin > 0 ? Math.ceil(absMin / stepVal) : 0;
+    const stepHeight = Math.floor(
+      TOTAL_HEIGHT / (sectionsAbove + Math.max(1, sectionsBelow)),
+    );
+    return {
+      maxValue: sectionsAbove * stepVal,
+      mostNegativeValue: -(sectionsBelow * stepVal),
+      stepValue: stepVal,
+      noOfSections: sectionsAbove,
+      noOfSectionsBelowXAxis: sectionsBelow,
+      stepHeight,
+      height: sectionsAbove * stepHeight,
+    };
+  };
+
+  const chartWidth = cardWidth * 0.76;
+
+  const isActive = activeIndex === 2;
+
+  const getBarWidth = (length) => Math.floor((chartWidth / length) * 0.8);
+  const getSpacing = (length) => Math.floor((chartWidth / length) * 0.2);
+
+  // dynamically find best xAxis label font size depending on how many records we got
+  const getXAxisFontSize = (length) => {
+    if (length >= 23) return 1;
+    if (length >= 14) return 2;
+    if (length >= 11) return 3;
+    if (length >= 10) return 4;
+    if (length >= 8) return 5;
+    if (length >= 7) return 6;
+    if (length >= 5) return 7;
+    return 8;
+  };
+
+  if (!cardWidth || barData.length === 0) {
+    return (
+      <View style={{ flex: 1, width: "100%" }}>
+        <View style={NetPowerStyles.title_container}>
+          <Text style={NetPowerStyles.title}>Net Power</Text>
+        </View>
+        <View style={NetPowerStyles.center_container}>
+          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+        </View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={{ flex: 1, width: "100%" }}>
+      <View style={NetPowerStyles.title_container}>
+        <Text style={NetPowerStyles.title}>Net Power</Text>
+      </View>
+      {isActive && (
+        <View style={NetPowerStyles.center_container}>
+          <Text style={NetPowerStyles.muted}>PAST HOUR</Text>
+          <BarChart
+            key={activeIndex === 2 ? `visible-${activeIndex}` : "hidden"}
+            data={barData}
+            barWidth={getBarWidth(barData.length)}
+            spacing={getSpacing(barData.length)}
+            initialSpacing={0}
+            endSpacing={0}
+            cappedBars
+            capThickness={4}
+            showGradient
+            yAxisLabelSuffix="W"
+            isAnimated
+            backgroundColor={colors.surface2}
+            gradientColor={colors.surface}
+            frontColor={colors.blue}
+            {...getChartParams()}
+            hideRules
+            xAxisLabelTextStyle={{
+              color: colors.text,
+              fontSize: getXAxisFontSize(barData.length),
+            }}
+            yAxisTextStyle={{ color: colors.text, fontSize: 7 }}
+            xAxisColor={colors.border}
+            yAxisColor={colors.border}
+            disablePress
+            animationDuration={1200}
+            autoShiftLabels
+          />
+        </View>
+      )}
+    </View>
+  );
+}

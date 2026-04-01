@@ -1,5 +1,5 @@
 const config = {
-  apiUrl: process.env.REACT_APP_API_URL || 'http://localhost:8000',
+  apiUrl: process.env.EXPO_PUBLIC_API_URL,
 };
 
 export default config;

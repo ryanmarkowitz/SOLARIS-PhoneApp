@@ -12,6 +12,8 @@ export const colors = {
   accent2: "#ea580c",
   highlight: "#fcd34d",
   blue: "#2563eb",
+  green: "#22c55e",
+  red: "#ef4444",
 };
 
 const styles = StyleSheet.create({

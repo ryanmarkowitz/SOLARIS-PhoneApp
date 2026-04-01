@@ -1,40 +1,37 @@
-import React, { useState } from "react";
-import { View, Text, Pressable } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import React from "react";
 import { useAuth } from "@clerk/clerk-expo";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 
-import config from "../config"
-
+import { colors } from "../components/Styles";
+import Telemetry from "./Telemetry";
+import ModeChange from "./ModeChange";
 import Footer from "../components/footer/Footer";
-// sign out modal I may implement later so leaving logic in here for now
-export default function SignedIn({navigation, screenSelection, setScreenSelection, signOutModalVisibility, setSignOutModalVisibility}) {
-  const [data, setData] = useState(undefined)
-  const {getToken} = useAuth() 
 
-  // Get data from Backend sqla
-  const getAPIData = async () => {
-    const url = `${config.apiUrl}/telemetry`
-    const token = getToken()
-    let result = await fetch(url, {
-      headers : {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    result = await result.json()
-    setData(result)
-  }
+const Tab = createBottomTabNavigator();
+
+export default function SignedIn({ navigation }) {
+  const { signOut, getToken } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (err) {
+      // sign out error is non-critical, proceed to home anyway
+    }
+    navigation.replace("home");
+  };
 
   return (
-    <SafeAreaView edges={["top"]} style={{ flex: 1 }}>
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>  
-        <Text style={{ fontSize: 24, }}>You are signed in</Text>
-      </View>
-      <Footer 
-        navigation = {navigation}
-        screenSelection = {screenSelection}
-        setScreenSelection={setScreenSelection}
-        setSignOutModalVisibility={setSignOutModalVisibility}
-      />
-    </SafeAreaView>
+    <Tab.Navigator
+      tabBar={(props) => <Footer {...props} onSignOut={handleSignOut} />}
+      screenOptions={{
+        headerShown: false,
+        animation: "shift",
+        sceneStyle: { backgroundColor: colors.bg },
+      }}
+    >
+      <Tab.Screen name="Telemetry" component={Telemetry} />
+      <Tab.Screen name="Mode" component={ModeChange} />
+    </Tab.Navigator>
   );
 }

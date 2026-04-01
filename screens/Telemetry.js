@@ -1,0 +1,142 @@
+import React, { useState, useEffect } from "react";
+import { View, Text, Image } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import styles, { colors } from "../components/Styles";
+import { useAuth } from "@clerk/clerk-expo";
+
+import config from "../config";
+import TelemetryCards from "../components/telemetryCards/TelemetryCards";
+
+import BatteryLevelPage1 from "../components/batteryLevel/BatteryLevelPage1";
+import BatteryLevelPage2 from "../components/batteryLevel/BatteryLevelPage2";
+
+import DistanceTraveledPage1 from "../components/distanceTraveled/DistanceTraveledPage1";
+import DistanceTraveledPage2 from "../components/distanceTraveled/DistanceTraveledPage2";
+import DistanceTraveledPage3 from "../components/distanceTraveled/DistanceTraveledPage3";
+import DistanceTraveledPage4 from "../components/distanceTraveled/DistanceTraveledPage4";
+import DistanceTraveledPage5 from "../components/distanceTraveled/DistanceTraveledPage5";
+
+import NetPowerPage1 from "../components/netPower/NetPowerPage1";
+import NetPowerPage2 from "../components/netPower/NetPowerPage2";
+import NetPowerPage3 from "../components/netPower/NetPowerPage3";
+
+export default function Telemetry() {
+  const [data, setData] = useState(undefined);
+  const [ShowBatteryPage2, SetShowBatteryPage2] = useState(false);
+  const { getToken } = useAuth();
+
+  // Get data from Backend sqla
+  const getAPIData = async () => {
+    try {
+      console.log(config.apiUrl);
+      const url = `${config.apiUrl}/telemetry/test`;
+      const token = await getToken(); // also needs to be awaited
+      let result = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      result = await result.json();
+      setData(result);
+      console.log("data:", result);
+      SetShowBatteryPage2(true);
+    } catch (err) {
+      console.error("getAPIData failed:", err);
+    }
+  };
+
+  // On load of page, call getAPIData
+  useEffect(() => {
+    getAPIData();
+  }, []);
+
+  return (
+    <SafeAreaView
+      edges={["top"]}
+      style={{ flex: 1, backgroundColor: colors.bg }}
+    >
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Image
+          source={require("../assets/SOLARIS_model1.png")}
+          style={{
+            width: "100%",
+            height: "100%",
+            shadowColor: colors.accent,
+            shadowOffset: { width: 0, height: 0 },
+            shadowOpacity: 0.2,
+            shadowRadius: 12,
+            elevation: 10,
+          }}
+          resizeMode="contain"
+        />
+      </View>
+      <View
+        style={{
+          flex: 4,
+          justifyContent: "space-evenly",
+          alignItems: "center",
+        }}
+      >
+        <View
+          style={{
+            width: "100%",
+            height: "50%",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TelemetryCards>
+            <BatteryLevelPage1 CurBatteryLevel={data?.batteryLevel?.current} />
+            {ShowBatteryPage2 && (
+              <BatteryLevelPage2 pastDayBattery={data?.batteryLevel?.pastDay} />
+            )}
+          </TelemetryCards>
+          <TelemetryCards>
+            <DistanceTraveledPage1
+              pastHourDist={data?.distanceTraveled?.pastHour}
+            />
+            <DistanceTraveledPage2
+              pastDayDist={data?.distanceTraveled?.pastDay}
+            />
+            <DistanceTraveledPage3
+              pastWeekDist={data?.distanceTraveled?.pastWeek}
+            />
+            <DistanceTraveledPage4
+              pastMonthDist={data?.distanceTraveled?.pastMonth}
+            />
+            <DistanceTraveledPage5
+              allTimeDist={data?.distanceTraveled?.allTime}
+            />
+          </TelemetryCards>
+        </View>
+        <View
+          style={{
+            width: "100%",
+            height: "50%",
+            flexDirection: "row",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <TelemetryCards>
+            <NetPowerPage1 currentPower={data?.netPower?.current} />
+            <NetPowerPage2 pastHourPower={data?.netPower?.pastHour} />
+            <NetPowerPage3 pastDayPower={data?.netPower?.pastDay} />
+          </TelemetryCards>
+          <TelemetryCards>
+            <View>
+              <Text>Page 1</Text>
+            </View>
+            <View>
+              <Text>Page 2</Text>
+            </View>
+            <View>
+              <Text>Page 3</Text>
+            </View>
+          </TelemetryCards>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
