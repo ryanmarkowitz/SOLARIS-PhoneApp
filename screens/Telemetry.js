@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Image } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  ScrollView,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles, { colors } from "../components/Styles";
 import { useAuth } from "@clerk/clerk-expo";
@@ -21,9 +28,15 @@ import NetPowerPage2 from "../components/netPower/NetPowerPage2";
 import NetPowerPage3 from "../components/netPower/NetPowerPage3";
 import NetPowerPage4 from "../components/netPower/NetPowerPage4";
 
+import CpuTempPage1 from "../components/cpuTemp/CpuTempPage1";
+import CpuTempPage2 from "../components/cpuTemp/CpuTempPage2";
+import CpuTempPage3 from "../components/cpuTemp/CpuTempPage3";
+
 export default function Telemetry() {
   const [data, setData] = useState(undefined);
   const [ShowBatteryPage2, SetShowBatteryPage2] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
   const { getToken } = useAuth();
 
   // Get data from Backend sqla
@@ -43,7 +56,15 @@ export default function Telemetry() {
       SetShowBatteryPage2(true);
     } catch (err) {
       console.error("getAPIData failed:", err);
+    } finally {
+      setRefreshing(false);
+      setLoading(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    getAPIData();
   };
 
   // On load of page, call getAPIData
@@ -56,89 +77,117 @@ export default function Telemetry() {
       edges={["top"]}
       style={{ flex: 1, backgroundColor: colors.bg }}
     >
-      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-        <Image
-          source={require("../assets/SOLARIS_model1.png")}
+      {loading && (
+        <View
           style={{
-            width: "100%",
-            height: "100%",
-            shadowColor: colors.accent,
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.2,
-            shadowRadius: 12,
-            elevation: 10,
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            justifyContent: "flex-start",
+            alignItems: "center",
+            zIndex: 10,
           }}
-          resizeMode="contain"
-        />
-      </View>
-      <View
-        style={{
-          flex: 4,
-          justifyContent: "space-evenly",
-          alignItems: "center",
-        }}
+        >
+          <ActivityIndicator size="large" color={colors.accent} />
+        </View>
+      )}
+      <ScrollView
+        contentContainerStyle={{ flex: 1 }}
+        overScrollMode="always"
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.accent}
+            colors={[colors.accent]}
+          />
+        }
       >
         <View
-          style={{
-            width: "100%",
-            height: "50%",
-            flexDirection: "row",
-            justifyContent: "center",
-            alignItems: "center",
-          }}
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
         >
-          <TelemetryCards>
-            <BatteryLevelPage1 CurBatteryLevel={data?.batteryLevel?.current} />
-            {ShowBatteryPage2 && (
-              <BatteryLevelPage2 pastDayBattery={data?.batteryLevel?.pastDay} />
-            )}
-          </TelemetryCards>
-          <TelemetryCards>
-            <DistanceTraveledPage1
-              pastHourDist={data?.distanceTraveled?.pastHour}
-            />
-            <DistanceTraveledPage2
-              pastDayDist={data?.distanceTraveled?.pastDay}
-            />
-            <DistanceTraveledPage3
-              pastWeekDist={data?.distanceTraveled?.pastWeek}
-            />
-            <DistanceTraveledPage4
-              pastMonthDist={data?.distanceTraveled?.pastMonth}
-            />
-            <DistanceTraveledPage5
-              allTimeDist={data?.distanceTraveled?.allTime}
-            />
-          </TelemetryCards>
+          <Image
+            source={require("../assets/SOLARIS_model1.png")}
+            style={{
+              width: "100%",
+              height: "100%",
+              shadowColor: colors.accent,
+              shadowOffset: { width: 0, height: 0 },
+              shadowOpacity: 0.2,
+              shadowRadius: 12,
+              elevation: 10,
+            }}
+            resizeMode="contain"
+          />
         </View>
         <View
           style={{
-            width: "100%",
-            height: "50%",
-            flexDirection: "row",
-            justifyContent: "center",
+            flex: 4,
+            justifyContent: "space-evenly",
             alignItems: "center",
           }}
         >
-          <TelemetryCards>
-            <NetPowerPage1 currentPower={data?.netPower?.current} />
-            <NetPowerPage2 pastHourPower={data?.netPower?.pastHour} />
-            <NetPowerPage3 pastDayPower={data?.netPower?.pastDay} />
-            <NetPowerPage4 pastWeekPower={data?.netPower?.pastWeek} />
-          </TelemetryCards>
-          <TelemetryCards>
-            <View>
-              <Text>Page 1</Text>
-            </View>
-            <View>
-              <Text>Page 2</Text>
-            </View>
-            <View>
-              <Text>Page 3</Text>
-            </View>
-          </TelemetryCards>
+          <View
+            style={{
+              width: "100%",
+              height: "50%",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <TelemetryCards>
+              <BatteryLevelPage1
+                CurBatteryLevel={data?.batteryLevel?.current}
+              />
+              {ShowBatteryPage2 && (
+                <BatteryLevelPage2
+                  pastDayBattery={data?.batteryLevel?.pastDay}
+                />
+              )}
+            </TelemetryCards>
+            <TelemetryCards>
+              <DistanceTraveledPage1
+                pastHourDist={data?.distanceTraveled?.pastHour}
+              />
+              <DistanceTraveledPage2
+                pastDayDist={data?.distanceTraveled?.pastDay}
+              />
+              <DistanceTraveledPage3
+                pastWeekDist={data?.distanceTraveled?.pastWeek}
+              />
+              <DistanceTraveledPage4
+                pastMonthDist={data?.distanceTraveled?.pastMonth}
+              />
+              <DistanceTraveledPage5
+                allTimeDist={data?.distanceTraveled?.allTime}
+              />
+            </TelemetryCards>
+          </View>
+          <View
+            style={{
+              width: "100%",
+              height: "50%",
+              flexDirection: "row",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <TelemetryCards>
+              <NetPowerPage1 currentPower={data?.netPower?.current} />
+              <NetPowerPage2 pastHourPower={data?.netPower?.pastHour} />
+              <NetPowerPage3 pastDayPower={data?.netPower?.pastDay} />
+              <NetPowerPage4 pastWeekPower={data?.netPower?.pastWeek} />
+            </TelemetryCards>
+            <TelemetryCards>
+              <CpuTempPage1 curCpuTemp={data?.cpuTemp?.current} />
+              <CpuTempPage2 pastHourCpuTemp={data?.cpuTemp?.pastHour} />
+              <CpuTempPage3 pastDayCpuTemp={data?.cpuTemp?.pastDay} />
+            </TelemetryCards>
+          </View>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

@@ -106,6 +106,7 @@ export default function NetPowerPage2({
             frontColor={colors.blue}
             {...getChartParams()}
             hideRules
+            xAxisLabelsHeight={barData.length >= 19 ? 0 : undefined}
             xAxisLabelTextStyle={{
               color: colors.text,
               fontSize: getXAxisFontSize(barData.length),

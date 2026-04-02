@@ -1,15 +1,15 @@
 import React from "react";
 import { View, Text } from "react-native";
 import styles, { colors } from "../Styles";
-import BatteryLevelStyles from "./BatteryLevelStyles";
+import CpuTempStyles from "./CpuTempStyles";
 import { BarChart } from "react-native-gifted-charts";
 
-export default function BatteryLevelPage2({
-  pastDayBattery,
+export default function CpuTempPage3({
+  pastDayCpuTemp,
   cardWidth,
   activeIndex,
 }) {
-  const barData = (pastDayBattery ?? []).map((item, i) => {
+  const barData = (pastDayCpuTemp ?? []).map((item, i) => {
     const date = new Date(item.dateTime); // JS parses ISO 8601 UTC automatically
 
     const hours = date.getHours(); // already local time after parsing
@@ -23,10 +23,18 @@ export default function BatteryLevelPage2({
 
   const chartWidth = cardWidth * 0.75;
 
-  const isActive = activeIndex === 1;
+  const isActive = activeIndex === 2;
 
   const getBarWidth = (length) => Math.floor((chartWidth / length) * 0.8);
   const getSpacing = (length) => Math.floor((chartWidth / length) * 0.2);
+
+  const getMaxVal = () => {
+    return Math.floor(Math.max(...barData.map((item) => item.value)));
+  };
+
+  const getStepVal = () => {
+    return Math.floor(Math.max(...barData.map((item) => item.value)) / 5);
+  };
 
   // dynamically find best xAxis label font size depending on how many records we got
   const getXAxisFontSize = (length) => {
@@ -43,11 +51,11 @@ export default function BatteryLevelPage2({
   if (!cardWidth || barData.length === 0) {
     return (
       <View style={{ flex: 1, width: "100%" }}>
-        <View style={BatteryLevelStyles.title_container}>
-          <Text style={BatteryLevelStyles.title}>Battery Level</Text>
+        <View style={CpuTempStyles.title_container}>
+          <Text style={CpuTempStyles.title}>CPU Temp</Text>
         </View>
-        <View style={BatteryLevelStyles.center_container}>
-          <Text style={BatteryLevelStyles.muted}>PAST DAY</Text>
+        <View style={CpuTempStyles.center_container}>
+          <Text style={CpuTempStyles.muted}>PAST DAY</Text>
         </View>
       </View>
     );
@@ -55,14 +63,14 @@ export default function BatteryLevelPage2({
 
   return (
     <View style={{ flex: 1, width: "100%" }}>
-      <View style={BatteryLevelStyles.title_container}>
-        <Text style={BatteryLevelStyles.title}>Battery Level</Text>
+      <View style={CpuTempStyles.title_container}>
+        <Text style={CpuTempStyles.title}>CPU Temp</Text>
       </View>
       {isActive && (
-        <View style={BatteryLevelStyles.center_container}>
-          <Text style={BatteryLevelStyles.muted}>PAST DAY</Text>
+        <View style={CpuTempStyles.center_container}>
+          <Text style={CpuTempStyles.muted}>PAST DAY</Text>
           <BarChart
-            key={activeIndex === 1 ? `visible-${activeIndex}` : "hidden"}
+            key={activeIndex === 2 ? `visible-${activeIndex}` : "hidden"}
             data={barData}
             barWidth={getBarWidth(barData.length)}
             spacing={getSpacing(barData.length)}
@@ -71,13 +79,13 @@ export default function BatteryLevelPage2({
             cappedBars
             capThickness={4}
             showGradient
-            yAxisLabelSuffix="%"
+            yAxisLabelSuffix="°C"
             isAnimated
             backgroundColor={colors.surface2}
             gradientColor={colors.surface}
             frontColor={colors.blue}
-            maxValue={100}
-            stepValue={20}
+            maxValue={getMaxVal()}
+            stepValue={getStepVal()}
             height={100}
             hideRules
             xAxisLabelsHeight={barData.length >= 19 ? 0 : undefined}
