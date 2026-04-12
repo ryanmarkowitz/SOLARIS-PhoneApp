@@ -53,7 +53,7 @@ export default function Telemetry({ navigation }) {
 
   const getAPIData = async () => {
     try {
-      const url = `${config.apiUrl}/telemetry/test`;
+      const url = `${config.apiUrl}/telemetry`;
       const token = await getToken();
       let result = await fetch(url, {
         headers: {
