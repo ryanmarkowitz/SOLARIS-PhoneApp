@@ -13,6 +13,7 @@ import HomePage from "./screens/HomePage.js";
 import LogIn from "./screens/LogIn.js";
 import SignUp from "./screens/SignUp.js";
 import SignedIn from "./screens/SignedIn.js";
+import Bluetooth from "./screens/Bluetooth.js";
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +31,7 @@ export default function App() {
           <Stack.Screen name="home" component={HomePage} />
           <Stack.Screen name="log in" component={LogIn} />
           <Stack.Screen name="sign up" component={SignUp} />
+          <Stack.Screen name="bluetooth" component={Bluetooth} />
           <Stack.Screen name="signed in" component={SignedIn} />
         </Stack.Navigator>
         <StatusBar style="auto" />

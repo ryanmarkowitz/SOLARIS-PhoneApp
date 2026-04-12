@@ -23,7 +23,12 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.SOLARIS"
+      "package": "com.anonymous.SOLARIS",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -31,7 +36,13 @@
     "plugins": [
       "expo-secure-store",
       "expo-web-browser",
-      "expo-font"
-    ]
+      "expo-font",
+      "react-native-ble-plx"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "87b589de-6e9c-45d1-8a75-861eb1f01f6a"
+      }
+    }
   }
 }

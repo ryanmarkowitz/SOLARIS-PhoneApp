@@ -7,17 +7,13 @@ import {
   Easing,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { JOYSTICK_RADIUS, KNOB_RADIUS, MAX_DIST, localStyles, joystickStyles } from "../components/ModeChangeStyles";
+import { MAX_DIST, localStyles, joystickStyles } from "../components/ModeChangeStyles";
 
 const Mode = Object.freeze({
   STATIONARY: "stationary",
   AUTOMATIC: "automatic",
   MANUAL: "manual",
 });
-
-const JOYSTICK_RADIUS = 80;
-const KNOB_RADIUS = 30;
-const MAX_DIST = JOYSTICK_RADIUS - KNOB_RADIUS;
 
 // axis="x" locks to horizontal (steering), axis="y" locks to vertical (throttle)
 // onMove receives a single value in [-1, 1]
