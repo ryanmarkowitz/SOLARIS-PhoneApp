@@ -1,12 +1,13 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { FontAwesome } from "@expo/vector-icons";
-
 import FooterStyles from "./FooterStyles";
 import { colors } from "../Styles";
+import { useBLE } from "../../BLEcontext";
 
 export default function Footer({ state, navigation, onSignOut }) {
   const activeIndex = state.index;
+  const { isConnected } = useBLE();
 
   return (
     <View style={FooterStyles.container}>
@@ -16,12 +17,17 @@ export default function Footer({ state, navigation, onSignOut }) {
           <Text style={[FooterStyles.text, activeIndex === 0 && FooterStyles.accentText]}>Telemetry</Text>
         </Pressable>
       </View>
-      <Pressable onPress={() => navigation.navigate("Mode")} style={{ justifyContent: "center", alignItems: "center" }}>
+
+      <Pressable
+        onPress={() => isConnected && navigation.navigate("Mode")}
+        style={{ justifyContent: "center", alignItems: "center", opacity: isConnected ? 1 : 0.3 }}
+      >
         <View style={{ justifyContent: "center", alignItems: "center" }}>
           <FontAwesome name="gears" size={25} color={activeIndex === 1 ? colors.accent : colors.text} style={{ marginBottom: 5 }} />
           <Text style={[FooterStyles.text, activeIndex === 1 && FooterStyles.accentText]}>Mode</Text>
         </View>
       </Pressable>
+
       <View style={{ justifyContent: "center", alignItems: "center" }}>
         <Pressable onPress={onSignOut} style={{ justifyContent: "center", alignItems: "center" }}>
           <FontAwesome name="sign-out" size={25} color={colors.text} style={{ marginBottom: 5 }} />

@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MAX_DIST, localStyles, joystickStyles } from "../components/ModeChangeStyles";
+import { useBLE } from "../BLEcontext";
 
 const Mode = Object.freeze({
   STATIONARY: "stationary",
@@ -15,10 +16,6 @@ const Mode = Object.freeze({
   MANUAL: "manual",
 });
 
-// axis="x" locks to horizontal (steering), axis="y" locks to vertical (throttle)
-// onMove receives a single value in [-1, 1]
-//   axis="y": -1 = full reverse, 1 = full forward
-//   axis="x": -1 = full left,    1 = full right
 function Joystick({ axis, onMove, onStop, label }) {
   const pan = useRef(new Animated.ValueXY()).current;
   const touchId = useRef(null);
@@ -47,7 +44,7 @@ function Joystick({ axis, onMove, onStop, label }) {
       const dy = touch.pageY - originY.current;
       const clamped = Math.max(-MAX_DIST, Math.min(MAX_DIST, dy));
       pan.setValue({ x: 0, y: clamped });
-      onMove?.(parseFloat((-clamped / MAX_DIST).toFixed(2))); // invert: up = positive
+      onMove?.(parseFloat((-clamped / MAX_DIST).toFixed(2)));
     }
   };
 
@@ -93,11 +90,43 @@ function Joystick({ axis, onMove, onStop, label }) {
 export default function ModeChange() {
   const [mode, setMode] = useState(Mode.AUTOMATIC);
   const [joystickMounted, setJoystickMounted] = useState(false);
-  const [throttle, setThrottle] = useState(0); // -1 to 1, forward/backward
-  const [steering, setSteering] = useState(0); // -1 to 1, left/right
-  const joystickAnim = useRef(new Animated.Value(0)).current; // 0=hidden, 1=visible
+  const [throttle, setThrottle] = useState(0);
+  const [steering, setSteering] = useState(0);
+  const joystickAnim = useRef(new Animated.Value(0)).current;
+  const isFirstMount = useRef(true);
 
-  // Mount/unmount the joystick section
+  const { connectedDevice, isConnected, readMode, writeMode, writeManualControl } = useBLE();
+
+  // on mount, read current mode from device
+  useEffect(() => {
+    async function fetchMode() {
+      if (isConnected && connectedDevice) {
+        const currentMode = await readMode(connectedDevice);
+        if (currentMode) setMode(currentMode);
+      }
+    }
+    fetchMode();
+  }, []);
+
+  // when mode changes, write to device — skip on first mount since we just read it
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (isConnected && connectedDevice) {
+      writeMode(connectedDevice, mode);
+    }
+  }, [mode]);
+
+  // when throttle or steering changes, send to device
+  useEffect(() => {
+    if (isConnected && connectedDevice && mode === Mode.MANUAL) {
+      writeManualControl(connectedDevice, throttle, steering);
+    }
+  }, [throttle, steering]);
+
+  // mount/unmount joystick section
   useEffect(() => {
     if (mode === Mode.MANUAL) {
       setJoystickMounted(true);
@@ -114,7 +143,7 @@ export default function ModeChange() {
     }
   }, [mode]);
 
-  // Animate in after joystick is mounted in the tree
+  // animate in after joystick is mounted
   useEffect(() => {
     if (joystickMounted) {
       joystickAnim.setValue(0);
@@ -126,15 +155,6 @@ export default function ModeChange() {
       }).start();
     }
   }, [joystickMounted]);
-
-  // TODO: On mount, query BLE device for current mode and call setMode() with the result
-  useEffect(() => {}, []);
-
-  // TODO: When mode changes, send new mode to BLE device
-  useEffect(() => {}, [mode]);
-
-  // TODO: When throttle or steering changes, send to BLE device
-  useEffect(() => {}, [throttle, steering]);
 
   return (
     <SafeAreaView

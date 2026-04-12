@@ -1,14 +1,11 @@
 import { StatusBar } from "expo-status-bar";
-
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
-
 import { useFonts } from "expo-font";
-
 import { colors } from "./components/Styles";
+import { BLEProvider } from "./context/BLEContext";
 import HomePage from "./screens/HomePage.js";
 import LogIn from "./screens/LogIn.js";
 import SignUp from "./screens/SignUp.js";
@@ -26,16 +23,18 @@ export default function App() {
 
   return (
     <ClerkProvider tokenCache={tokenCache}>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
-          <Stack.Screen name="home" component={HomePage} />
-          <Stack.Screen name="log in" component={LogIn} />
-          <Stack.Screen name="sign up" component={SignUp} />
-          <Stack.Screen name="bluetooth" component={Bluetooth} />
-          <Stack.Screen name="signed in" component={SignedIn} />
-        </Stack.Navigator>
-        <StatusBar style="auto" />
-      </NavigationContainer>
+      <BLEProvider>
+        <NavigationContainer>
+          <Stack.Navigator screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+            <Stack.Screen name="home" component={HomePage} />
+            <Stack.Screen name="log in" component={LogIn} />
+            <Stack.Screen name="sign up" component={SignUp} />
+            <Stack.Screen name="bluetooth" component={Bluetooth} />
+            <Stack.Screen name="signed in" component={SignedIn} />
+          </Stack.Navigator>
+          <StatusBar style="auto" />
+        </NavigationContainer>
+      </BLEProvider>
     </ClerkProvider>
   );
 }
