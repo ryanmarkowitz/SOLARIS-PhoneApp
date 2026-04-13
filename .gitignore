@@ -41,6 +41,10 @@ yarn-error.*
 /android
 
 /assets
+!/assets/icon.png
+!/assets/splash-icon.png
+!/assets/adaptive-icon.png
+!/assets/favicon.png
 
 # local installers / binaries
 *.deb

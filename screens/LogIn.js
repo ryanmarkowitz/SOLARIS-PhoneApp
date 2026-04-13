@@ -29,7 +29,7 @@ export default function LogIn({ navigation }) {
     if (isSignedIn) {
       navigation.reset({
         index: 0,
-        routes: [{ name: "signed in" }],
+        routes: [{ name: "bluetooth" }],
       });
     }
   }, [isSignedIn]);
