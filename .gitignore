@@ -40,7 +40,6 @@ yarn-error.*
 /ios
 /android
 
-/assets
 !/assets/icon.png
 !/assets/splash-icon.png
 !/assets/adaptive-icon.png
