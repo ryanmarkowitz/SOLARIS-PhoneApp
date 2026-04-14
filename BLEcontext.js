@@ -4,7 +4,7 @@ import { PermissionsAndroid, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import { toByteArray, fromByteArray } from 'base64-js';
 import { useAuth } from '@clerk/clerk-expo';
-import config from "../config";
+import config from "./config";
 
 const SERVICE_UUID     = "5c4b3a29-1807-f6e5-d4c3-b2a1000000d0";
 const TELEMETRY_UUID   = "5c4b3a29-1807-f6e5-d4c3-b2a1000000d1";
@@ -62,18 +62,30 @@ export function BLEProvider({ children }) {
 
   function scanForRobot(onDeviceFound) {
     setIsScanning(true);
-    manager.startDeviceScan([SERVICE_UUID], null, (error, device) => {
-      if (error) {
-        console.error('Scan error:', error);
-        setIsScanning(false);
-        return;
+    const subscription = manager.onStateChange((state) => {
+      console.log('BLE state:', state);
+      if (state === 'PoweredOn') {
+        subscription.remove();
+        try {
+          manager.startDeviceScan(null, {}, (error, device) => {
+            if (error) {
+              console.error('Scan error:', error);
+              setIsScanning(false);
+              return;
+            }
+            if (device && device.name === 'SOLARIS') {
+              console.log('SOLARIS device found:', device.id);
+              manager.stopDeviceScan();
+              setIsScanning(false);
+              onDeviceFound(device);
+            }
+          });
+        } catch (e) {
+          console.error('startDeviceScan threw:', e);
+          setIsScanning(false);
+        }
       }
-      if (device) {
-        manager.stopDeviceScan();
-        setIsScanning(false);
-        onDeviceFound(device);
-      }
-    });
+    }, true);
   }
 
   async function connectToRobot(device) {

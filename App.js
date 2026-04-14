@@ -5,7 +5,7 @@ import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { useFonts } from "expo-font";
 import { colors } from "./components/Styles";
-import { BLEProvider } from "./context/BLEContext";
+import { BLEProvider } from "./BLEcontext.js";
 import HomePage from "./screens/HomePage.js";
 import LogIn from "./screens/LogIn.js";
 import SignUp from "./screens/SignUp.js";

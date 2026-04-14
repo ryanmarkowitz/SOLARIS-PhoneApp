@@ -5,7 +5,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import * as Location from 'expo-location';
 import { useAuth } from '@clerk/clerk-expo';
 import config from "../config";
-import { useBLE } from "../useBLE";
+import { useBLE } from "../BLEcontext";
 
 import Animated, {
   Easing,
@@ -74,8 +74,8 @@ export default function Bluetooth({ navigation }) {
 
   const startAnimations = () => {
     ringScale1.value = 1;    ringOpacity1.value = 0.9;
-    ringScale2.value = 1;    ringOpacity2.value = 0.9;
-    ringScale3.value = 1;    ringOpacity3.value = 0.9;
+    ringScale2.value = 1;    ringOpacity2.value = 0.87;
+    ringScale3.value = 1;    ringOpacity3.value = 0.85;
 
     pulse(ringScale1, ringOpacity1, 0);
     pulse(ringScale2, ringOpacity2, RING_STAGGER);
@@ -116,6 +116,8 @@ export default function Bluetooth({ navigation }) {
           return;
         }
 
+        console.log("passed step 2");
+
         // step 3: update title and begin syncing
         setTitle("Connected to Device: Syncing Data");
 
@@ -125,6 +127,7 @@ export default function Bluetooth({ navigation }) {
         // step 5: fetch weather and write to ESP
         const token = await getToken();
         const location = await Location.getCurrentPositionAsync({});
+        console.log("location found");
         const { latitude, longitude } = location.coords;
 
         const weatherResponse = await fetch(
@@ -133,6 +136,8 @@ export default function Bluetooth({ navigation }) {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
+
+        console.log("backend api was called and returned");
 
         if (!weatherResponse.ok) {
           setError("Failed to fetch weather data");
@@ -219,7 +224,7 @@ export default function Bluetooth({ navigation }) {
           paddingVertical: 10,
           paddingHorizontal: 50,
           borderRadius: 10,
-          marginTop: 40,
+          marginTop: 120,
         }}
       >
         <Text style={{ color: colors.bg, fontWeight: "600", fontFamily: 'Geist' }}>Continue without bluetooth</Text>

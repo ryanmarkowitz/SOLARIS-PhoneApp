@@ -50,7 +50,7 @@ export default function SignUp({ navigation }) {
       await setActive({ session: createdSessionId });
     }
   };
-
+  
   // Handles facebook button for sign in
   const onFacebookPress = async () => {
     const { createdSessionId, setActive } = await startSSOFlow({
