@@ -30,6 +30,7 @@ export default function Bluetooth({ navigation }) {
   const { getToken } = useAuth();
   const {
     isConnected,
+    connectedDevice,
     requestPermissions,
     scanForRobot,
     connectToRobot,
@@ -108,54 +109,99 @@ export default function Bluetooth({ navigation }) {
         return;
       }
 
-      // step 2: scan and connect
-      scanForRobot(async (device) => {
-        const connected = await connectToRobot(device);
-        if (!connected) {
-          setError("Failed to connect to robot");
-          return;
-        }
+      if (!isConnected) {
+        // step 2: scan and connect, then sync
+        scanForRobot(async (device) => {
+          try {
+            const connected = await connectToRobot(device);
+            if (!connected) {
+              setError("Failed to connect to robot");
+              return;
+            }
 
-        console.log("passed step 2");
+            setTitle("Connected to Device: Syncing Data");
+            await syncTime(connected);
 
-        // step 3: update title and begin syncing
-        setTitle("Connected to Device: Syncing Data");
+            const token = await getToken();
+            const location = await Location.getCurrentPositionAsync({});
+            const { latitude, longitude } = location.coords;
 
-        // step 4: sync time
-        await syncTime(connected);
+            const controller = new AbortController();
+            const weatherTimer = setTimeout(() => controller.abort(), 10000);
+            let weatherResponse;
+            try {
+              weatherResponse = await fetch(
+                `${config.apiUrl}/weather?lat=${latitude}&long=${longitude}`,
+                { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
+              );
+            } catch (err) {
+              setError(err.name === 'AbortError' ? "Weather request timed out" : "Failed to reach server");
+              return;
+            } finally {
+              clearTimeout(weatherTimer);
+            }
 
-        // step 5: fetch weather and write to ESP
-        const token = await getToken();
-        const location = await Location.getCurrentPositionAsync({});
-        console.log("location found");
-        const { latitude, longitude } = location.coords;
+            if (!weatherResponse.ok) {
+              setError("Failed to fetch weather data");
+              return;
+            }
 
-        const weatherResponse = await fetch(
-          `${config.apiUrl}/weather?lat=${latitude}&long=${longitude}`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
+            const weatherData = await weatherResponse.json();
+            await writeWeather(connected, weatherData);
+            await syncTelemetry(connected);
+
+            navigation.reset({
+              index: 0,
+              routes: [{ name: "signed in" }],
+            });
+          } catch (err) {
+            console.error('Sync error:', err);
+            setError("Connection failed. Please try again.");
           }
-        );
-
-        console.log("backend api was called and returned");
-
-        if (!weatherResponse.ok) {
-          setError("Failed to fetch weather data");
-          return;
-        }
-
-        const weatherData = await weatherResponse.json();
-        await writeWeather(connected, weatherData);
-
-        // step 6: sync telemetry
-        await syncTelemetry(connected);
-
-        // step 7: navigate to signed in screen
-        navigation.reset({
-          index: 0,
-          routes: [{ name: "signed in" }],
         });
-      });
+      } else {
+        // already connected — skip scan and sync directly
+        try {
+          setTitle("Connected to Device: Syncing Data");
+          await syncTime(connectedDevice);
+
+          const token = await getToken();
+          const location = await Location.getCurrentPositionAsync({});
+          const { latitude, longitude } = location.coords;
+
+          const controller = new AbortController();
+          const weatherTimer = setTimeout(() => controller.abort(), 10000);
+          let weatherResponse;
+          try {
+            weatherResponse = await fetch(
+              `${config.apiUrl}/weather?lat=${latitude}&long=${longitude}`,
+              { headers: { Authorization: `Bearer ${token}` }, signal: controller.signal }
+            );
+          } catch (err) {
+            setError(err.name === 'AbortError' ? "Weather request timed out" : "Failed to reach server");
+            return;
+          } finally {
+            clearTimeout(weatherTimer);
+          }
+
+          if (!weatherResponse.ok) {
+            setError("Failed to fetch weather data");
+            return;
+          }
+
+          const weatherData = await weatherResponse.json();
+          await writeWeather(connectedDevice, weatherData);
+          await syncTelemetry(connectedDevice);
+
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "signed in" }],
+          });
+        } catch (err) {
+          console.error('Sync error:', err);
+          setError("Connection failed. Please try again.");
+        }
+      }
 
     } catch (err) {
       console.error('Connection flow error:', err);
@@ -207,7 +253,7 @@ export default function Bluetooth({ navigation }) {
             paddingVertical: 10,
             paddingHorizontal: 50,
             borderRadius: 10,
-            marginTop: 40,
+            marginTop: 120,
           }}
         >
           <Text style={{ color: colors.text, fontWeight: "600", fontFamily: 'Geist' }}>Retry</Text>

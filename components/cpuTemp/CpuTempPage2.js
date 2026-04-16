@@ -99,7 +99,7 @@ export default function CpuTempPage2({
             cappedBars
             capThickness={4}
             showGradient
-            yAxisLabelSuffix="W"
+            yAxisLabelSuffix="°C"
             isAnimated
             backgroundColor={colors.surface2}
             gradientColor={colors.surface}

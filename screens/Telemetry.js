@@ -96,6 +96,7 @@ export default function Telemetry({ navigation }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
+    setLoading(true);
     if (isConnected && connectedDevice) {
       await syncBLEData();
     }

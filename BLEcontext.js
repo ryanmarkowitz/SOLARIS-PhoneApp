@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useMemo, useState } from 'react';
+import React, { createContext, useContext, useMemo, useRef, useState } from 'react';
 import { BleManager } from 'react-native-ble-plx';
 import { PermissionsAndroid, Platform } from 'react-native';
 import DeviceInfo from 'react-native-device-info';
@@ -28,6 +28,20 @@ const MODE_BYTES = {
 
 const BLEContext = createContext(null);
 
+async function fetchWithTimeout(url, options = {}, ms = 10000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    const response = await fetch(url, { ...options, signal: controller.signal });
+    return response;
+  } catch (err) {
+    if (err.name === 'AbortError') throw new Error('Request timed out');
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export function BLEProvider({ children }) {
   const { getToken } = useAuth();
   const manager = useMemo(() => new BleManager(), []);
@@ -35,6 +49,7 @@ export function BLEProvider({ children }) {
   const [connectedDevice, setConnectedDevice] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const connectingRef = useRef(false);
 
   async function requestPermissions() {
     if (Platform.OS === 'android') {
@@ -61,6 +76,9 @@ export function BLEProvider({ children }) {
   }
 
   function scanForRobot(onDeviceFound) {
+    if (connectingRef.current) return;
+    connectingRef.current = true;
+    manager.stopDeviceScan();
     setIsScanning(true);
     const subscription = manager.onStateChange((state) => {
       console.log('BLE state:', state);
@@ -71,6 +89,7 @@ export function BLEProvider({ children }) {
             if (error) {
               console.error('Scan error:', error);
               setIsScanning(false);
+              connectingRef.current = false;
               return;
             }
             if (device && device.name === 'SOLARIS') {
@@ -83,6 +102,7 @@ export function BLEProvider({ children }) {
         } catch (e) {
           console.error('startDeviceScan threw:', e);
           setIsScanning(false);
+          connectingRef.current = false;
         }
       }
     }, true);
@@ -100,31 +120,29 @@ export function BLEProvider({ children }) {
         setIsConnected(false);
       });
 
+      connectingRef.current = false;
       return connected;
     } catch (error) {
       console.error('Connection error:', error);
       setIsConnected(false);
+      connectingRef.current = false;
       return null;
     }
   }
 
   async function syncTime(device) {
-    try {
-      const timestamp = Math.floor(Date.now() / 1000);
-      const buf = new ArrayBuffer(4);
-      const view = new DataView(buf);
-      view.setUint32(0, timestamp, true);
-      const bytes = new Uint8Array(buf);
-      const base64 = fromByteArray(bytes);
-      await device.writeCharacteristicWithResponseForService(
-        SERVICE_UUID,
-        TIME_SYNC_UUID,
-        base64
-      );
-      console.log('Time sync sent:', timestamp);
-    } catch (error) {
-      console.error('Time sync error:', error);
-    }
+    const timestamp = Math.floor(Date.now() / 1000);
+    const buf = new ArrayBuffer(4);
+    const view = new DataView(buf);
+    view.setUint32(0, timestamp, true);
+    const bytes = new Uint8Array(buf);
+    const base64 = fromByteArray(bytes);
+    await device.writeCharacteristicWithResponseForService(
+      SERVICE_UUID,
+      TIME_SYNC_UUID,
+      base64
+    );
+    console.log('Time sync sent:', timestamp);
   }
 
   async function readMode(device) {
@@ -182,35 +200,31 @@ export function BLEProvider({ children }) {
   }
 
   async function writeWeather(device, weatherData) {
-    try {
-      const { sunrise, sunset, forecast } = weatherData;
-      const buf = new ArrayBuffer(152);
-      const view = new DataView(buf);
-      let offset = 0;
-      view.setUint32(offset, sunrise, true);
+    const { sunrise, sunset, forecast } = weatherData;
+    const buf = new ArrayBuffer(152);
+    const view = new DataView(buf);
+    let offset = 0;
+    view.setUint32(offset, sunrise, true);
+    offset += 4;
+    view.setUint32(offset, sunset, true);
+    offset += 4;
+    for (let i = 0; i < 24; i++) {
+      const entry = forecast[i];
+      view.setUint32(offset, entry.time, true);
       offset += 4;
-      view.setUint32(offset, sunset, true);
-      offset += 4;
-      for (let i = 0; i < 24; i++) {
-        const entry = forecast[i];
-        view.setUint32(offset, entry.time, true);
-        offset += 4;
-        view.setUint8(offset, entry.cloud_cover_pct);
-        offset += 1;
-        view.setUint8(offset, entry.precip_probability_pct);
-        offset += 1;
-      }
-      const bytes = new Uint8Array(buf);
-      const base64 = fromByteArray(bytes);
-      await device.writeCharacteristicWithResponseForService(
-        SERVICE_UUID,
-        WEATHER_UUID,
-        base64
-      );
-      console.log('Weather written successfully');
-    } catch (error) {
-      console.error('Weather write error:', error);
+      view.setUint8(offset, entry.cloud_cover_pct);
+      offset += 1;
+      view.setUint8(offset, entry.precip_probability_pct);
+      offset += 1;
     }
+    const bytes = new Uint8Array(buf);
+    const base64 = fromByteArray(bytes);
+    await device.writeCharacteristicWithResponseForService(
+      SERVICE_UUID,
+      WEATHER_UUID,
+      base64
+    );
+    console.log('Weather written successfully');
   }
 
   function parseTelemetryPage(base64Value) {
@@ -223,11 +237,12 @@ export function BLEProvider({ children }) {
     let offset = 3;
     for (let i = 0; i < recordCount; i++) {
       const timestamp = view.getUint32(offset, true);
-      const battery_percent = view.getUint8(offset + 4);
-      const distance_m = view.getUint32(offset + 5, true);
-      const net_power_gain_w = view.getInt32(offset + 9, true);
-      offset += 13;
-      records.push({ timestamp, battery_percent, distance_m, net_power_gain_w });
+      const cpu_temp = view.getUint8(offset + 4);
+      const battery_percent = view.getUint8(offset + 5);
+      const distance_m = view.getUint8(offset + 6);
+      const net_power_gain_w = view.getInt8(offset + 7);
+      offset += 8;
+      records.push({ timestamp, cpu_temp, battery_percent, distance_m, net_power_gain_w });
     }
     return { pageIndex, totalPages, recordCount, records };
   }
@@ -265,11 +280,16 @@ export function BLEProvider({ children }) {
             allRecords.push(...records);
             console.log(`Received page ${pageIndex + 1}/${totalPages} (${recordCount} records)`);
 
-            await writeControlCommand(device, 0x02);
+            if (pageIndex + 1 < totalPages) {
+              await writeControlCommand(device, 0x02);
+              return;
+            }
 
             if (pageIndex + 1 === totalPages) {
+              console.log('Last page received, getting token. apiUrl:', config.apiUrl);
               const token = await getToken();
-              const response = await fetch(`${config.apiUrl}/telemetry`, {
+              console.log('Token obtained, posting telemetry...');
+              const response = await fetchWithTimeout(`${config.apiUrl}/telemetry`, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
@@ -278,6 +298,7 @@ export function BLEProvider({ children }) {
                 body: JSON.stringify(allRecords),
               });
 
+              console.log('Telemetry POST response status:', response.status);
               if (!response.ok) throw new Error(`Backend error: ${response.status}`);
 
               await writeControlCommand(device, 0x03);

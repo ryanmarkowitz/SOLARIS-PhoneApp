@@ -9,6 +9,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MAX_DIST, localStyles, joystickStyles } from "../components/ModeChangeStyles";
 import { useBLE } from "../BLEcontext";
+import { colors } from "../components/Styles";
 
 const Mode = Object.freeze({
   STATIONARY: "stationary",
@@ -87,7 +88,7 @@ function Joystick({ axis, onMove, onStop, label }) {
   );
 }
 
-export default function ModeChange() {
+export default function ModeChange({ navigation }) {
   const [mode, setMode] = useState(Mode.AUTOMATIC);
   const [joystickMounted, setJoystickMounted] = useState(false);
   const [throttle, setThrottle] = useState(0);
@@ -96,6 +97,12 @@ export default function ModeChange() {
   const isFirstMount = useRef(true);
 
   const { connectedDevice, isConnected, readMode, writeMode, writeManualControl } = useBLE();
+
+  useEffect(() => {
+    if (!isConnected) {
+      navigation.navigate("Telemetry");
+    }
+  }, [isConnected]);
 
   // on mount, read current mode from device
   useEffect(() => {
