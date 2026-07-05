@@ -17,13 +17,15 @@ const Mode = Object.freeze({
   MANUAL: "manual",
 });
 
-function Joystick({ axis, onMove, onStop, label }) {
+function Joystick({ axis, onMove, onStop, label, activeAxisRef }) {
   const pan = useRef(new Animated.ValueXY()).current;
   const touchId = useRef(null);
   const originY = useRef(0);
   const originX = useRef(0);
 
   const handleTouchStart = (e) => {
+    if (activeAxisRef.current !== null && activeAxisRef.current !== axis) return;
+    activeAxisRef.current = axis;
     const touch = e.nativeEvent.changedTouches[0];
     touchId.current = touch.identifier;
     originX.current = touch.pageX;
@@ -55,6 +57,7 @@ function Joystick({ axis, onMove, onStop, label }) {
     );
     if (!released) return;
     touchId.current = null;
+    if (activeAxisRef.current === axis) activeAxisRef.current = null;
     Animated.spring(pan, {
       toValue: { x: 0, y: 0 },
       useNativeDriver: false,
@@ -95,6 +98,9 @@ export default function ModeChange({ navigation }) {
   const [steering, setSteering] = useState(0);
   const joystickAnim = useRef(new Animated.Value(0)).current;
   const isFirstMount = useRef(true);
+  const activeAxisRef = useRef(null);
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
   const { connectedDevice, isConnected, readMode, writeMode, writeManualControl } = useBLE();
 
@@ -143,6 +149,7 @@ export default function ModeChange({ navigation }) {
         duration: 400,
         useNativeDriver: true,
       }).start(() => {
+        if (modeRef.current === Mode.MANUAL) return;
         setJoystickMounted(false);
         setThrottle(0);
         setSteering(0);
@@ -225,12 +232,14 @@ export default function ModeChange({ navigation }) {
                 label={`Throttle: ${throttle.toFixed(2)}`}
                 onMove={(val) => setThrottle(val)}
                 onStop={() => setThrottle(0)}
+                activeAxisRef={activeAxisRef}
               />
               <Joystick
                 axis="x"
                 label={`Steering: ${steering.toFixed(2)}`}
                 onMove={(val) => setSteering(val)}
                 onStop={() => setSteering(0)}
+                activeAxisRef={activeAxisRef}
               />
             </View>
           </Animated.View>

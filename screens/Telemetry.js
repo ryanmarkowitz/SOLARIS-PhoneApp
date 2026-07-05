@@ -105,6 +105,7 @@ export default function Telemetry({ navigation }) {
 
   useEffect(() => {
     getAPIData();
+    console.log("API URL:", config.apiUrl);
   }, []);
 
   return (
