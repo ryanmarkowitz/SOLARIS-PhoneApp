@@ -13,7 +13,7 @@ const getDistFontSize = (value) => {
 };
 
 export default function DistanceTraveledPage1({ pastHourDist }) {
-  const pastHourDistString = `${pastHourDist ?? "--"}m`;
+  const pastHourDistString = `${pastHourDist != null ? pastHourDist.toFixed(1) : "--"}m`;
 
   return (
     <View style={{ flex: 1, width: "100%" }}>

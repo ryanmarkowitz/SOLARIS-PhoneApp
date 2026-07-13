@@ -13,7 +13,7 @@ const getDistFontSize = (value) => {
 };
 
 export default function DistanceTraveledPage3({ pastWeekDist }) {
-  const pastWeekDistString = `${pastWeekDist ?? "--"}m`;
+  const pastWeekDistString = `${pastWeekDist != null ? pastWeekDist.toFixed(1) : "--"}m`;
 
   return (
     <View style={{ flex: 1, width: "100%" }}>

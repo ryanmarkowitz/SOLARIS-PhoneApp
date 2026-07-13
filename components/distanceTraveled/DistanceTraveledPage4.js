@@ -13,7 +13,7 @@ const getDistFontSize = (value) => {
 };
 
 export default function DistanceTraveledPage4({ pastMonthDist }) {
-  const pastMonthDistString = `${pastMonthDist ?? "--"}m`;
+  const pastMonthDistString = `${pastMonthDist != null ? pastMonthDist.toFixed(1) : "--"}m`;
 
   return (
     <View style={{ flex: 1, width: "100%" }}>

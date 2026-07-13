@@ -239,9 +239,9 @@ export function BLEProvider({ children }) {
       const timestamp = view.getUint32(offset, true);
       const cpu_temp = view.getUint8(offset + 4);
       const battery_percent = view.getUint8(offset + 5);
-      const distance_m = view.getUint8(offset + 6);
-      const net_power_gain_w = view.getInt8(offset + 7);
-      offset += 8;
+      const distance_m = view.getFloat32(offset + 6, true);
+      const net_power_gain_w = view.getInt8(offset + 10);
+      offset += 11;
       records.push({ timestamp, cpu_temp, battery_percent, distance_m, net_power_gain_w });
     }
     return { pageIndex, totalPages, recordCount, records };

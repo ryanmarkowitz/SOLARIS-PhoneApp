@@ -13,7 +13,7 @@ const getDistFontSize = (value) => {
 };
 
 export default function DistanceTraveledPage5({ allTimeDist }) {
-  const allTimeDistString = `${allTimeDist ?? "--"}m`;
+  const allTimeDistString = `${allTimeDist != null ? allTimeDist.toFixed(1) : "--"}m`;
 
   return (
     <View style={{ flex: 1, width: "100%" }}>
