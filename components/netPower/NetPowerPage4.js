@@ -30,7 +30,7 @@ export default function NetPowerPage4({
       Math.min(0, Math.floor(Math.min(...barData.map((i) => i.value)))),
     );
     const range = Math.max(absMax, absMin);
-    const stepVal = Math.ceil(range / 5);
+    const stepVal = Math.max(1, Math.ceil(range / 5));
     const sectionsAbove = Math.max(1, Math.ceil(absMax / stepVal));
     const sectionsBelow = absMin > 0 ? Math.ceil(absMin / stepVal) : 0;
     const stepHeight = Math.floor(

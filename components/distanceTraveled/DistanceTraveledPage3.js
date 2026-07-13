@@ -5,11 +5,11 @@ import styles, { colors } from "../Styles";
 import DistanceTraveledStyles from "./DistanceTraveledStyles.js";
 
 const getDistFontSize = (value) => {
-  if (value == null) return 60;
-  if (value < 1000) return 60;
-  if (value < 10000) return 48;
-  if (value < 100000) return 36;
-  return 28;
+  if (value == null) return 38;
+  if (value < 1000) return 38;
+  if (value < 10000) return 32;
+  if (value < 100000) return 26;
+  return 20;
 };
 
 export default function DistanceTraveledPage3({ pastWeekDist }) {

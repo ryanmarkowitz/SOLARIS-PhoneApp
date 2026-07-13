@@ -299,7 +299,12 @@ export function BLEProvider({ children }) {
               });
 
               console.log('Telemetry POST response status:', response.status);
-              if (!response.ok) throw new Error(`Backend error: ${response.status}`);
+              if (!response.ok) {
+                const errorBody = await response.text();
+                console.log('Telemetry POST error body:', errorBody);
+                console.log('Telemetry POST payload:', JSON.stringify(allRecords));
+                throw new Error(`Backend error: ${response.status}`);
+              }
 
               await writeControlCommand(device, 0x03);
               console.log('Telemetry sync complete, logs cleared');

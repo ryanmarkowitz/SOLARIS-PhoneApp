@@ -29,11 +29,11 @@ export default function CpuTempPage3({
   const getSpacing = (length) => Math.floor((chartWidth / length) * 0.2);
 
   const getMaxVal = () => {
-    return Math.floor(Math.max(...barData.map((item) => item.value)));
+    return Math.max(1, Math.floor(Math.max(...barData.map((item) => item.value))));
   };
 
   const getStepVal = () => {
-    return Math.floor(Math.max(...barData.map((item) => item.value)) / 5);
+    return Math.max(1, Math.floor(Math.max(...barData.map((item) => item.value)) / 5));
   };
 
   // dynamically find best xAxis label font size depending on how many records we got
