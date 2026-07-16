@@ -13,7 +13,7 @@ const getDistFontSize = (value) => {
 };
 
 export default function NetPowerPage1({ currentPower }) {
-  const currentPowerString = `${currentPower ?? "--"}W`;
+  const currentPowerString = `${currentPower ?? "--"}mW`;
 
   return (
     <View style={{ flex: 1, width: "100%" }}>

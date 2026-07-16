@@ -99,7 +99,7 @@ export default function NetPowerPage2({
             cappedBars
             capThickness={4}
             showGradient
-            yAxisLabelSuffix="W"
+            yAxisLabelSuffix="mW"
             isAnimated
             backgroundColor={colors.surface2}
             gradientColor={colors.surface}
